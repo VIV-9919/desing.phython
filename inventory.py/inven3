@@ -1,0 +1,122 @@
+import sqlite3
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# 1. Database Connection & Table Setup
+def connect_db():
+    conn = sqlite3.connect('inventory.db')
+    cursor = conn.cursor()
+    # Table banayi ja rahi hai agar pehle se nahi hai
+    cursor.execute('''CREATE TABLE IF NOT EXISTS items 
+                   (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    name TEXT NOT NULL, 
+                    price REAL NOT NULL, 
+                    quantity INTEGER NOT NULL)''')
+    conn.commit()
+    return conn
+
+# 2. Choice 1: Add Product
+def add_product(name, price, stock):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO items (name, price, quantity) VALUES (?, ?, ?)", (name, price, stock))
+    conn.commit()
+    conn.close()
+    print(f"\n✅ {name} stock mein add ho gaya hai!")
+
+# 3. Choice 2: View Stock (With Low Stock Alert)
+def view_stock():
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM items")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    print("\n--- Current Inventory Status ---")
+    print("ID | Name | Price | Stock")
+    print("-" * 35)
+    for row in rows:
+        # Smart Alert: Agar stock 5 se kam hai
+        alert = "⚠️  LOW STOCK!" if row[3] < 5 else "OK"
+        print(f"{row[0]} | {row[1]} | {row[2]} | {row[3]} ({alert})")
+    print("-" * 35)
+
+# 4. Choice 3: Update Stock
+def update_stock(item_id, new_quantity):
+    conn = connect_db()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE items SET quantity = ? WHERE id = ?", (new_quantity, item_id))
+    conn.commit()
+    conn.close()
+    print(f"\n✅ ID {item_id} ka stock update ho gaya!")
+
+# 5. Choice 4: Export to Excel
+def export_to_excel():
+    try:
+        conn = connect_db()
+        df = pd.read_sql_query("SELECT * FROM items", conn)
+        conn.close()
+        df.to_excel("Vivekananda_Inventory.xlsx", index=False)
+        print("\Excel file 'Vivekananda_Inventory.xlsx' taiyar hai!")
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+
+# 6. Choice 5: Show Graph
+def show_graph():
+    try:
+        conn = connect_db()
+        df = pd.read_sql_query("SELECT name, quantity FROM items", conn)
+        conn.close()
+        if not df.empty:
+            df.plot(kind='bar', x='name', y='quantity', color='orange')
+            plt.title('Current Stock Analysis')
+            plt.show()
+        else:
+            print("\n❌ Graph dikhane ke liye data nahi hai!")
+    except Exception as e:
+        print(f"\n❌ Graph error: {e}")
+
+# --- MAIN PROGRAM START ---
+def main():
+    connect_db() # Database initialize karein
+    while True:
+        print("\n--- VIVEKANANDA SUPER SMART INVENTORY ---")
+        print("1. Add Product")
+        print("2. View Stock")
+        print("3. Update Stock")
+        print("4. Export to Excel")
+        print("5. Show Stock Graph 📊")
+        print("6. Exit")
+        
+        # Sahi tareeka input lene ka:
+        choice = input("Select: ")
+
+        if choice == '1':
+            n = input("Enter Name: ")
+            p = float(input("Enter Price: "))
+            s = int(input("Enter Stock: "))
+            add_product(n, p, s)
+            
+        elif choice == '2':
+            view_stock()
+            
+        elif choice == '3':
+            i = int(input("Enter Item ID: "))
+            q = int(input("Enter New Quantity: "))
+            update_stock(i, q)
+            
+        elif choice == '4':
+            export_to_excel()
+            
+        elif choice == '5':
+            show_graph()
+            
+        elif choice == '6':
+            print("Exiting Vivekananda Smart System... Bye!")
+            break
+            
+        else:
+            print("Ghalat choice! Dubara koshish karein.")
+
+if __name__ == "__main__":
+    main()

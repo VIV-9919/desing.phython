@@ -2,7 +2,7 @@ import turtle as tur
 import colorsys as cs
 tur.bgcolor('black')
 tur.width(2)
-for i in range(180):
+for i in range(250):
     tur.color(cs.hsv_to_rgb(abs(90-i)/90,abs(90-i)/90,1))
     tur.forward(100)
     tur.left(60)

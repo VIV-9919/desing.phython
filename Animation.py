@@ -1,7 +1,7 @@
 import turtle
 import colorsys
 screen=turtle.Screen()
-screen.setup(500, 600, startx=0, starty=100)
+screen.setup(530, 600, startx=0, starty=100)
 t=turtle.Turtle()
 s=turtle.Screen()
 s.bgcolor("black")
